@@ -1,3 +1,4 @@
+import MoneyReceiver.CoinReceiver;
 import enums.ActionLetter;
 import model.*;
 import util.UniversalArray;
@@ -7,7 +8,7 @@ import java.util.Scanner;
 
 public class AppRunner {
     private final UniversalArray<Product> products = new UniversalArrayImpl<>();
-    private final CoinAcceptor coinAcceptor;
+    private final CoinReceiver coinAcceptor;
     private static boolean isExit = true;
 
     private AppRunner() {
@@ -19,7 +20,7 @@ public class AppRunner {
                 new Mars(ActionLetter.F, 80),
                 new Pistachios(ActionLetter.G, 130)
         });
-        coinAcceptor = new CoinAcceptor(100);
+        coinAcceptor = new CoinReceiver(100);
     }
 
     public static void run() {
