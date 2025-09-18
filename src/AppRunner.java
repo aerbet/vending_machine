@@ -2,7 +2,6 @@ import MoneyReceiver.BankCardReceiver;
 import MoneyReceiver.CoinReceiver;
 import MoneyReceiver.Receiver;
 import enums.ActionLetter;
-import exception.BankCardException;
 import model.*;
 import util.UniversalArray;
 import util.UniversalArrayImpl;
@@ -11,6 +10,7 @@ import java.util.Scanner;
 
 public class AppRunner {
     private final UniversalArray<Product> products = new UniversalArrayImpl<>();
+    private BankCardReceiver bankCardReceiver;
     private static Receiver receiver;
     private static boolean isExit = true;
 
@@ -39,7 +39,7 @@ public class AppRunner {
         print("В автомате доступны:");
         showProducts(products);
 
-        print("На счету доступно: " + receiver.getAmount());
+        print("\nНа счету доступно: " + receiver.getAmount());
 
         UniversalArray<Product> allowProducts = new UniversalArrayImpl<>();
         allowProducts.addAll(getAllowedProducts().toArray());
@@ -91,40 +91,6 @@ public class AppRunner {
         }
     }
 
-    private String checkCardPassword() {
-        while (true) {
-            try {
-                print("Введите пин-код карты из 4 цифр: ");
-                String pin = fromConsole();
-
-                if (pin.length() != 4 || !pin.matches("\\d+")) {
-                    throw new BankCardException("Неправильный пин-код карты, он должен содержать только 4 цифры");
-                }
-
-                return pin;
-            } catch (BankCardException e) {
-                print(e.getMessage());
-            }
-        }
-    }
-
-    private String checkCardNumber() {
-        while (true) {
-            try {
-                print("Введите номер карты из 16 цифр: ");
-                String card = fromConsole();
-
-                if (card.length() != 16 || !card.matches("\\d+")) {
-                    throw new BankCardException("Неправильный номер карты, может быть только 16 цифр");
-                }
-
-                return card;
-            } catch (BankCardException e) {
-                print(e.getMessage());
-            }
-        }
-    }
-
     private Receiver chooseReceiver() {
         while (true) {
             try {
@@ -135,9 +101,6 @@ public class AppRunner {
                     case 1:
                         return new CoinReceiver(100);
                     case 2:
-                        String num = checkCardNumber();
-                        String pin = checkCardPassword();
-                        print("Карта " + num +  " успешна зарегистриована");
                         return new BankCardReceiver(120);
                     default:
                 }
