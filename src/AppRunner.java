@@ -23,6 +23,7 @@ public class AppRunner {
                 new Mars(ActionLetter.F, 80),
                 new Pistachios(ActionLetter.G, 130)
         });
+
         receiver = chooseReceiver();
     }
 
@@ -38,17 +39,16 @@ public class AppRunner {
         print("В автомате доступны:");
         showProducts(products);
 
-        print("Монет на сумму: " + receiver.getAmount());
+        print("На счету доступно: " + receiver.getAmount());
 
         UniversalArray<Product> allowProducts = new UniversalArrayImpl<>();
         allowProducts.addAll(getAllowedProducts().toArray());
 
         try {
             chooseAction(allowProducts);
-        } catch (StringIndexOutOfBoundsException s) {
-            print("Вы ввели пустую строку, попробуйте еще раз");
+        } catch (StringIndexOutOfBoundsException | NumberFormatException s) {
+            print("Вы ничего не ввели, попробуйте еще раз");
         }
-
     }
 
     private UniversalArray<Product> getAllowedProducts() {
@@ -66,7 +66,6 @@ public class AppRunner {
         showActions(products);
         print("h - Выйти");
         String action = fromConsole().substring(0, 1);
-
 
         if ("a".equalsIgnoreCase(action)) {
             receiver.setAmount(receiver.getAmount() + 10);
@@ -92,41 +91,59 @@ public class AppRunner {
         }
     }
 
-    private Long checkCardNumber() {
-        print("Введите номер карты из 16 цифр: ");
-        String card = fromConsole();
-        long number = Long.parseLong(card);
+    private String checkCardPassword() {
+        while (true) {
+            try {
+                print("Введите пин-код карты из 4 цифр: ");
+                String pin = fromConsole();
 
-        if (card.length() == 16) {
-            return number;
-        } else {
-            throw new BankCardException("Неправильный номер карты, он должен содержать 16 цифр");
+                if (pin.length() != 4 || !pin.matches("\\d+")) {
+                    throw new BankCardException("Неправильный пин-код карты, он должен содержать только 4 цифры");
+                }
+
+                return pin;
+            } catch (BankCardException e) {
+                print(e.getMessage());
+            }
         }
     }
 
-    private int checkCardPassword() {
-        print("Введите пин-код карты из 4 цифр: ");
-        String card = fromConsole();
-        int number = Integer.parseInt(card);
+    private String checkCardNumber() {
+        while (true) {
+            try {
+                print("Введите номер карты из 16 цифр: ");
+                String card = fromConsole();
 
-        if (card.length() == 4) {
-            return number;
-        } else {
-            throw new BankCardException("Неправильный пин-код карты, он должен содержать только 4 цифры");
+                if (card.length() != 16 || !card.matches("\\d+")) {
+                    throw new BankCardException("Неправильный номер карты, может быть только 16 цифр");
+                }
+
+                return card;
+            } catch (BankCardException e) {
+                print(e.getMessage());
+            }
         }
     }
 
     private Receiver chooseReceiver() {
-        print("Выберите способ оплаты: " + "\n" + "1. Монеты 2. Банковская карта");
-        String choice = fromConsole().substring(0, 1);
+        while (true) {
+            try {
+                print("Выберите способ оплаты: " + "\n" + "1. Монеты 2. Банковская карта");
+                String choice = fromConsole();
 
-        switch (Integer.parseInt(choice)) {
-            case 1:
-                return new CoinReceiver(100);
-            case 2:
-                return new BankCardReceiver(120);
-            default:
-                return null;
+                switch (Integer.parseInt(choice)) {
+                    case 1:
+                        return new CoinReceiver(100);
+                    case 2:
+                        String num = checkCardNumber();
+                        String pin = checkCardPassword();
+                        print("Карта " + num +  " успешна зарегистриована");
+                        return new BankCardReceiver(120);
+                    default:
+                }
+            } catch (NumberFormatException e) {
+                print("Выберите правильный способ оплаты");
+            }
         }
     }
 
