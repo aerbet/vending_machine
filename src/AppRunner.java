@@ -1,5 +1,8 @@
+import MoneyReceiver.BankCardReceiver;
 import MoneyReceiver.CoinReceiver;
+import MoneyReceiver.Receiver;
 import enums.ActionLetter;
+import exception.BankCardException;
 import model.*;
 import util.UniversalArray;
 import util.UniversalArrayImpl;
@@ -8,7 +11,7 @@ import java.util.Scanner;
 
 public class AppRunner {
     private final UniversalArray<Product> products = new UniversalArrayImpl<>();
-    private final CoinReceiver coinAcceptor;
+    private static Receiver receiver;
     private static boolean isExit = true;
 
     private AppRunner() {
@@ -20,11 +23,12 @@ public class AppRunner {
                 new Mars(ActionLetter.F, 80),
                 new Pistachios(ActionLetter.G, 130)
         });
-        coinAcceptor = new CoinReceiver(100);
+        receiver = chooseReceiver();
     }
 
     public static void run() {
         AppRunner app = new AppRunner();
+
         while (isExit) {
             app.startSimulation();
         }
@@ -34,7 +38,7 @@ public class AppRunner {
         print("В автомате доступны:");
         showProducts(products);
 
-        print("Монет на сумму: " + coinAcceptor.getAmount());
+        print("Монет на сумму: " + receiver.getAmount());
 
         UniversalArray<Product> allowProducts = new UniversalArrayImpl<>();
         allowProducts.addAll(getAllowedProducts().toArray());
@@ -50,7 +54,7 @@ public class AppRunner {
     private UniversalArray<Product> getAllowedProducts() {
         UniversalArray<Product> allowProducts = new UniversalArrayImpl<>();
         for (int i = 0; i < products.size(); i++) {
-            if (coinAcceptor.getAmount() >= products.get(i).getPrice()) {
+            if (receiver.getAmount() >= products.get(i).getPrice()) {
                 allowProducts.add(products.get(i));
             }
         }
@@ -65,7 +69,7 @@ public class AppRunner {
 
 
         if ("a".equalsIgnoreCase(action)) {
-            coinAcceptor.setAmount(coinAcceptor.getAmount() + 10);
+            receiver.setAmount(receiver.getAmount() + 10);
             print("Вы пополнили баланс на 10");
             return;
         }
@@ -76,7 +80,7 @@ public class AppRunner {
             try {
                 for (int i = 0; i < products.size(); i++) {
                     if (products.get(i).getActionLetter().equals(ActionLetter.valueOf(action.toUpperCase()))) {
-                        coinAcceptor.setAmount(coinAcceptor.getAmount() - products.get(i).getPrice());
+                        receiver.setAmount(receiver.getAmount() - products.get(i).getPrice());
                         print("Вы купили " + products.get(i).getName());
                         break;
                     }
@@ -85,6 +89,44 @@ public class AppRunner {
                 print("Недопустимая буква. Попрбуйте еще раз.");
                 chooseAction(products);
             }
+        }
+    }
+
+    private Long checkCardNumber() {
+        print("Введите номер карты из 16 цифр: ");
+        String card = fromConsole();
+        long number = Long.parseLong(card);
+
+        if (card.length() == 16) {
+            return number;
+        } else {
+            throw new BankCardException("Неправильный номер карты, он должен содержать 16 цифр");
+        }
+    }
+
+    private int checkCardPassword() {
+        print("Введите пин-код карты из 4 цифр: ");
+        String card = fromConsole();
+        int number = Integer.parseInt(card);
+
+        if (card.length() == 4) {
+            return number;
+        } else {
+            throw new BankCardException("Неправильный пин-код карты, он должен содержать только 4 цифры");
+        }
+    }
+
+    private Receiver chooseReceiver() {
+        print("Выберите способ оплаты: " + "\n" + "1. Монеты 2. Банковская карта");
+        String choice = fromConsole().substring(0, 1);
+
+        switch (Integer.parseInt(choice)) {
+            case 1:
+                return new CoinReceiver(100);
+            case 2:
+                return new BankCardReceiver(120);
+            default:
+                return null;
         }
     }
 
