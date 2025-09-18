@@ -1,10 +1,9 @@
 ### IntelliJ IDEA ###
-/.idea
-./.idea
-.idea/
+.idea
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+vending_machine.iml
 
 ### Eclipse ###
 .apt_generated
